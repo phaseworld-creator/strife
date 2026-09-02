@@ -1,7 +1,7 @@
 > [!IMPORTANT]  
 > As of 06/02/24, Vendetta has been discontinued, and so have my plugins.
 
-> [!INFO]
+> [!WARNING]
 > This Is Just For my personal use so dont use it
 
 # Vendetta Plugins
