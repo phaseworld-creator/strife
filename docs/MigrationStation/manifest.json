@@ -1,0 +1,1 @@
+{"name":"MigrationStation","description":"Allows backing up and restoring a Vendetta install, alongside some other tools. WIP, do not use yet!","authors":[{"name":"maisy","id":"257109471589957632"}],"main":"index.js","vendetta":{"icon":"ic_logout_24px"},"hash":"26b11b32105f29b0315d0f14d3dece91fcaf581b2debc1009cdb240ceda88e22"}

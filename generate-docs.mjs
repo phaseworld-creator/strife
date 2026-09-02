@@ -1,8 +1,9 @@
-import { readdir, readFile, writeFile, mkdir } from "fs/promises";
+import { readdir, readFile, writeFile, mkdir, copyFile } from "fs/promises";
 import { join } from "path";
 
 const pluginsDir = "./plugins";
 const docsDir = "./docs";
+const distDir = "./dist";
 
 const plugins = await readdir(pluginsDir);
 
@@ -87,6 +88,18 @@ for (const plug of plugins) {
 </html>`;
 
         await writeFile(join(pluginDir, "index.html"), html);
+
+        const builtPluginDir = join(distDir, plug);
+        try {
+            const builtFiles = await readdir(builtPluginDir);
+            for (const file of builtFiles) {
+                await copyFile(join(builtPluginDir, file), join(pluginDir, file));
+            }
+            console.log(`Copied built files for ${manifest.name}`);
+        } catch (e) {
+            console.error(`Failed to copy built files for ${plug}:`, e);
+        }
+
         console.log(`Generated page for ${manifest.name}`);
     } catch (e) {
         console.error(`Failed to generate page for ${plug}:`, e);

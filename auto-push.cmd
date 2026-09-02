@@ -5,6 +5,14 @@ set "REPO=C:\Users\ON-TH\.folder\Documents\Github\phaseworld-creator\strife"
 
 pushd "%REPO%" || (echo Failed to access repo && pause && exit /b 1)
 
+echo Building plugins...
+node build.mjs || (echo Build failed && pause && exit /b 1)
+
+echo.
+echo Generating docs...
+node generate-docs.mjs || (echo Doc generation failed && pause && exit /b 1)
+
+echo.
 echo Checking git status...
 git status --short
 
