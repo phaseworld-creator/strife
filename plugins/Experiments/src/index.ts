@@ -1,3 +1,4 @@
+// This Was Edited by phaseworld
 import { FluxDispatcher, ReactNative } from "@vendetta/metro/common";
 import { findByStoreName } from "@vendetta/metro";
 import { showConfirmationAlert } from "@vendetta/ui/alerts";
@@ -15,5 +16,5 @@ export const onUnload = () => showConfirmationAlert({
     cancelText: "Not now",
     // @ts-expect-error oh god
     confirmColor: "red",
-    onConfirm: ReactNative.NativeModules.BundleUpdaterManager.reload,
+    onConfirm: () => ReactNative.NativeModules.BundleUpdaterManager.reload(),
 });

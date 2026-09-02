@@ -1,3 +1,4 @@
+// This Was Edited by phaseworld
 import { FluxDispatcher } from "@vendetta/metro/common";
 import { findByProps, findByStoreName } from "@vendetta/metro";
 import { logger } from "@vendetta";
@@ -6,13 +7,15 @@ const { getSerializedState } = findByProps("getSerializedState");
 const { getCurrentUser } = findByStoreName("UserStore");
 
 // This is in a seperate file to make editing easier in future should Discord ever change the method again
-export function enable() { 
+export function enable() {
     try {
-        // Get the current user
         const user = getCurrentUser();
+        if (!user) {
+            logger.error("Failed to enable experiments: no user found");
+            return;
+        }
 
-        // Add 1 (staff) to local user flags
-        user.flags += 1;
+        user.flags |= 1;
 
         // Filter for Flux action handlers on event OVERLAY_INITIALIZE that have "Experiment" in their name
         const actionHandlers = FluxDispatcher._actionHandlers._computeOrderedActionHandlers("OVERLAY_INITIALIZE").filter(e => e.name.includes("Experiment"));
