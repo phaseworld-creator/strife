@@ -8,19 +8,24 @@ const distDir = "./dist";
 const plugins = await readdir(pluginsDir);
 
 for (const plug of plugins) {
-    const manifestPath = join(pluginsDir, plug, "manifest.json");
+    const builtManifestPath = join(distDir, plug, "manifest.json");
+    const sourceManifestPath = join(pluginsDir, plug, "manifest.json");
+    let manifest;
     try {
-        const manifest = JSON.parse(await readFile(manifestPath, "utf-8"));
-        const pluginDir = join(docsDir, plug);
-        await mkdir(pluginDir, { recursive: true });
+        manifest = JSON.parse(await readFile(builtManifestPath, "utf-8"));
+    } catch {
+        manifest = JSON.parse(await readFile(sourceManifestPath, "utf-8"));
+    }
+    const pluginDir = join(docsDir, plug);
+    await mkdir(pluginDir, { recursive: true });
 
-        const author = manifest.authors?.[0];
-        const authorName = author?.name ?? "Unknown";
-        const authorId = author?.id ?? "";
-        const description = manifest.description ?? "No description provided.";
-        const icon = manifest.vendetta?.icon ?? "";
+    const author = manifest.authors?.[0];
+    const authorName = author?.name ?? "Unknown";
+    const authorId = author?.id ?? "";
+    const description = manifest.description ?? "No description provided.";
+    const icon = manifest.vendetta?.icon ?? "";
 
-        const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -87,24 +92,25 @@ for (const plug of plugins) {
 </body>
 </html>`;
 
-        await writeFile(join(pluginDir, "index.html"), html);
-
-        const builtPluginDir = join(distDir, plug);
         try {
-            const builtFiles = await readdir(builtPluginDir);
-            for (const file of builtFiles) {
-                await copyFile(join(builtPluginDir, file), join(pluginDir, file));
-            }
-            console.log(`Copied built files for ${manifest.name}`);
-        } catch (e) {
-            console.error(`Failed to copy built files for ${plug}:`, e);
-        }
+            await writeFile(join(pluginDir, "index.html"), html);
 
-        console.log(`Generated page for ${manifest.name}`);
-    } catch (e) {
-        console.error(`Failed to generate page for ${plug}:`, e);
+            const builtPluginDir = join(distDir, plug);
+            try {
+                const builtFiles = await readdir(builtPluginDir);
+                for (const file of builtFiles) {
+                    await copyFile(join(builtPluginDir, file), join(pluginDir, file));
+                }
+                console.log(`Copied built files for ${manifest.name}`);
+            } catch (e) {
+                console.error(`Failed to copy built files for ${plug}:`, e);
+            }
+
+            console.log(`Generated page for ${manifest.name}`);
+        } catch (e) {
+            console.error(`Failed to generate page for ${plug}:`, e);
+        }
     }
-}
 
 // Generate main index
 const pluginCards = plugins.map(plug => {
