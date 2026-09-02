@@ -6,7 +6,6 @@ import { logger } from "@vendetta";
 const { getSerializedState } = findByProps("getSerializedState");
 const { getCurrentUser } = findByStoreName("UserStore");
 
-// This is in a seperate file to make editing easier in future should Discord ever change the method again
 export function enable() {
     try {
         const user = getCurrentUser();
@@ -15,22 +14,49 @@ export function enable() {
             return;
         }
 
-        user.flags |= 1;
+        try {
+            Object.defineProperty(user, "flags", {
+                writable: true,
+                configurable: true,
+                value: (user.flags ?? 0) | 1,
+            });
+        } catch (e) {
+            logger.error("Failed to set user flags:", e);
+            return;
+        }
 
-        // Filter for Flux action handlers on event OVERLAY_INITIALIZE that have "Experiment" in their name
-        const actionHandlers = FluxDispatcher._actionHandlers._computeOrderedActionHandlers("OVERLAY_INITIALIZE").filter(e => e.name.includes("Experiment"));
+        let actionHandlers = [];
+        try {
+            const handlers = FluxDispatcher._actionHandlers?._computeOrderedActionHandlers?.("OVERLAY_INITIALIZE");
+            if (handlers) {
+                actionHandlers = handlers.filter((e) => e?.name?.includes("Experiment"));
+            }
+        } catch (e) {
+            logger.error("Failed to get action handlers:", e);
+        }
 
-        // Call the action handlers with fake data
-        actionHandlers.forEach(({ actionHandler }) => actionHandler({
-            serializedExperimentStore: getSerializedState(),
-            user,
-        }));
-    } catch(e) {
+        if (actionHandlers.length === 0) {
+            logger.error("No experiment handlers found");
+            return;
+        }
+
+        const serialized = getSerializedState?.();
+        actionHandlers.forEach(({ actionHandler }) => {
+            try {
+                actionHandler({
+                    serializedExperimentStore: serialized,
+                    user,
+                });
+            } catch (e) {
+                logger.error("Failed to call experiment handler:", e);
+            }
+        });
+    } catch (e) {
         logger.error(`Failed to enable experiments...`, e);
     }
 }
 
-export function payload() { 
-    FluxDispatcher.unsubscribe("CONNECTION_OPEN", payload); 
+export function payload() {
+    FluxDispatcher.unsubscribe("CONNECTION_OPEN", payload);
     enable();
 }

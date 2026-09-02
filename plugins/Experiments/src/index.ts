@@ -4,10 +4,17 @@ import { findByStoreName } from "@vendetta/metro";
 import { showConfirmationAlert } from "@vendetta/ui/alerts";
 import { enable, payload } from "./snippet";
 
-// TODO: With this method, UserStore is found twice, once here and once in ./snippet.ts
-//? Probably makes no impact but might be worth looking into?
 const { getCurrentUser } = findByStoreName("UserStore");
-getCurrentUser() ? enable() : FluxDispatcher.subscribe("CONNECTION_OPEN", payload);
+
+function tryEnable() {
+    if (getCurrentUser()) {
+        enable();
+    } else {
+        FluxDispatcher.subscribe("CONNECTION_OPEN", payload);
+    }
+}
+
+tryEnable();
 
 export const onUnload = () => showConfirmationAlert({
     title: "Wait!",
